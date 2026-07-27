@@ -30,6 +30,9 @@
     resultsKicker: document.querySelector("#results-kicker"),
     closestMessage: document.querySelector("#closest-message"),
     browseGenres: document.querySelector("#browse-genre-options"),
+    libraryStats: document.querySelector("#library-stats"),
+    showMoreWrap: document.querySelector("#show-more-wrap"),
+    showMoreButton: document.querySelector("#show-more-books"),
     search: document.querySelector("#book-search"),
     readingListStatus: document.querySelector("#reading-list-status"),
     navToggle: document.querySelector(".nav-toggle"),
@@ -38,6 +41,7 @@
 
   let readingList = loadReadingList();
   let recommendationTimer;
+  let browseState = { genre: "", matches: [], visibleCount: 6 };
 
   function slugify(value) {
     return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -179,19 +183,17 @@
   }
 
   function audienceMatches(book, audience) {
-    return audience === "All Ages" || book.audiences.includes("All Ages") || book.audiences.includes(audience);
+    if (audience === "All Ages") return book.audiences.includes("All Ages");
+    return book.audiences.includes("All Ages") || book.audiences.includes(audience);
   }
 
   function calculateBookScore(book, preferences) {
     let score = 0;
     if (audienceMatches(book, preferences.audience)) score += 4;
-    if (preferences.type === "Either" || !preferences.type) {
-      score += 0;
-    } else if (book.type === preferences.type) {
-      score += 3;
-    }
+    if (preferences.type !== "Either" && preferences.type && book.type === preferences.type) score += 3;
     preferences.genres.forEach((genre) => {
-      if (book.genres.includes(genre)) score += 4;
+      if (book.primaryGenre === genre) score += 6;
+      else if (book.genres.includes(genre)) score += 4;
     });
     preferences.moods.forEach((mood) => {
       if (book.moods.includes(mood)) score += 2;
@@ -210,15 +212,30 @@
   }
 
   function recommendBooks(preferences, limit = 3) {
-    return books
-      .map((book) => ({
-        book,
-        score: calculateBookScore(book, preferences),
-        tieBreaker: Math.random()
-      }))
-      .sort((a, b) => b.score - a.score || a.tieBreaker - b.tieBreaker)
-      .slice(0, limit)
-      .map((result) => result.book);
+    const ranked = books
+      .filter((book) => audienceMatches(book, preferences.audience))
+      .map((book) => ({ book, score: calculateBookScore(book, preferences), tieBreaker: Math.random() }))
+      .sort((a, b) => b.score - a.score || a.tieBreaker - b.tieBreaker);
+    const selected = [];
+    const selectedIds = new Set();
+    const addResult = (entry) => {
+      if (!entry || selectedIds.has(entry.book.id) || selected.length >= limit) return;
+      selected.push(entry.book);
+      selectedIds.add(entry.book.id);
+    };
+
+    preferences.genres.forEach((genre) => {
+      const bestPrimary = ranked.find((entry) => entry.book.primaryGenre === genre && entry.score >= ranked[0].score - 4);
+      addResult(bestPrimary);
+    });
+
+    ranked.forEach((entry) => {
+      const repeatsAuthor = selected.some((book) => book.author === entry.book.author);
+      const repeatsPrimary = selected.filter((book) => book.primaryGenre === entry.book.primaryGenre).length >= 2;
+      if (!repeatsAuthor && !repeatsPrimary) addResult(entry);
+    });
+    ranked.forEach(addResult);
+    return selected.slice(0, limit);
   }
 
   function formatList(items) {
@@ -228,23 +245,18 @@
   }
 
   function buildMatchExplanation(book, preferences) {
-    const matches = [
-      ...preferences.genres.filter((genre) => book.genres.includes(genre)),
-      ...preferences.moods.filter((mood) => book.moods.includes(mood))
-    ];
-    if (preferences.length !== "No Preference" && book.length === preferences.length) {
-      matches.push(preferences.length);
+    const primaryMatches = preferences.genres.filter((genre) => book.primaryGenre === genre);
+    const secondaryMatches = preferences.genres.filter((genre) => genre !== book.primaryGenre && book.genres.includes(genre));
+    const moodMatches = preferences.moods.filter((mood) => book.moods.includes(mood));
+    const details = [];
+    if (secondaryMatches.length) details.push(`${formatList(secondaryMatches)} as an additional genre`);
+    if (moodMatches.length) details.push(`the ${formatList(moodMatches.map((mood) => mood.toLowerCase()))} mood you selected`);
+    if (preferences.length !== "No Preference" && book.length === preferences.length) details.push(`your ${preferences.length.toLowerCase()} preference`);
+    if (primaryMatches.length) {
+      return `This is a strong ${book.primaryGenre} match${details.length ? ` with ${formatList(details)}` : ""}.`;
     }
-    if (preferences.type !== "Either" && book.type === preferences.type) {
-      matches.push(preferences.type);
-    }
-    if (preferences.audience && audienceMatches(book, preferences.audience)) {
-      matches.push(preferences.audience);
-    }
-    const uniqueMatches = [...new Set(matches)];
-    return uniqueMatches.length
-      ? `This book matches your ${formatList(uniqueMatches)} preferences.`
-      : "This book is one of the closest choices in our collection.";
+    if (details.length) return `This book matches ${formatList(details)}.`;
+    return "This book is one of the closest choices in our collection.";
   }
 
   function coverTheme(book) {
@@ -260,7 +272,7 @@
     cover.className = `book-cover cover-theme-${coverTheme(book)}`;
     cover.setAttribute("aria-label", `Decorative placeholder cover for ${book.title}`);
     cover.innerHTML = `
-      <span class="cover-genre">${book.genres[0]}</span>
+      <span class="cover-genre">${book.primaryGenre}</span>
       <span class="cover-initial" aria-hidden="true">${book.title.charAt(0)}</span>
       <strong class="cover-title">${book.title}</strong>
       <span class="cover-author">${book.author}</span>
@@ -279,7 +291,10 @@
       .join("");
 
     content.innerHTML = `
-      <p class="book-type">${book.type}</p>
+      <div class="book-label-row">
+        <p class="book-type">${book.type}</p>
+        <span class="primary-genre-badge">${book.primaryGenre}</span>
+      </div>
       <h3>${book.title}</h3>
       <p class="book-author">by ${book.author}</p>
       <div class="book-meta" aria-label="Book details">${metadata}</div>
@@ -306,6 +321,7 @@
 
   function renderRecommendations(recommendations, preferences, options = {}) {
     elements.resultsGrid.replaceChildren();
+    elements.showMoreWrap.hidden = true;
     const {
       heading = "We found your next read!",
       intro = "These books match the interests and preferences you selected.",
@@ -384,17 +400,29 @@
     }
   }
 
-  function filterBooksByGenre(genre) {
-    const matches = books.filter((book) => book.genres.includes(genre)).slice(0, 6);
-    renderRecommendations(matches, null, {
-      heading: `${genre} Books`,
-      intro: `Explore up to six books from our ${genre.toLowerCase()} shelf.`,
+  function renderBrowseGenreResults(shouldScroll = true) {
+    const visibleBooks = browseState.matches.slice(0, browseState.visibleCount);
+    elements.resultsGrid.replaceChildren();
+    showResultsArea({
+      heading: `${browseState.genre} Books (${browseState.matches.length})`,
+      intro: `Showing ${visibleBooks.length} of ${browseState.matches.length} books from our ${browseState.genre.toLowerCase()} shelf. Primary matches appear first.`,
       kicker: "Browse the collection"
     });
-    scrollToResults();
+    visibleBooks.forEach((book) => elements.resultsGrid.append(createBookCard(book)));
+    elements.showMoreWrap.hidden = browseState.visibleCount >= browseState.matches.length;
+    if (shouldScroll) scrollToResults();
+  }
+
+  function filterBooksByGenre(genre) {
+    const matches = books
+      .filter((book) => book.genres.includes(genre))
+      .sort((a, b) => Number(b.primaryGenre === genre) - Number(a.primaryGenre === genre) || a.title.localeCompare(b.title));
+    browseState = { genre, matches, visibleCount: 6 };
+    renderBrowseGenreResults();
   }
 
   function searchBooks(query) {
+    elements.showMoreWrap.hidden = true;
     const normalizedQuery = query.trim().toLowerCase();
     if (!normalizedQuery) {
       elements.results.hidden = true;
@@ -555,6 +583,10 @@
     });
 
     elements.search.addEventListener("input", (event) => searchBooks(event.target.value));
+    elements.showMoreButton.addEventListener("click", () => {
+      browseState.visibleCount += 6;
+      renderBrowseGenreResults(false);
+    });
 
     document.addEventListener("click", (event) => {
       const actionButton = event.target.closest("[data-action]");
@@ -586,6 +618,7 @@
     renderMoodOptions();
     renderSingleChoiceOptions(elements.lengthOptions, config.lengths, "length");
     renderBrowseGenres();
+    elements.libraryStats.textContent = `Explore ${books.length} books: ${books.filter((book) => book.type === "Fiction").length} fiction and ${books.filter((book) => book.type === "Nonfiction").length} nonfiction titles across ${config.genreGroups.flatMap((group) => group.genres).length} genres.`;
     renderReadingList();
     initializeFaqAccordion();
     initializeNavigation();
