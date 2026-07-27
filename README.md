@@ -7,7 +7,7 @@ NextRead is a polished, responsive book recommendation website built with HTML, 
 - Five-question recommendation quiz with accessible validation
 - Primary-genre-weighted scoring and varied top-three results
 - Dynamic explanations based on actual matching preferences
-- 92 real, recognizable books spanning 39 configured genres
+- 547 unique, recognizable books spanning 39 configured genres
 - Primary-first genre browsing with totals and six-at-a-time “Show More” results
 - Search by title, author, or genre
 - Audience-aware “Surprise Me” recommendations
@@ -42,10 +42,10 @@ The project works directly from local files and does not require an internet con
 
 1. Configuration arrays for audiences, book types, grouped genres, moods, and length categories.
 2. A `book()` helper that produces consistently structured book objects.
-3. The curated `books` array containing 92 fiction and nonfiction titles.
+3. A protected 92-book base collection plus an additive supplemental catalog, producing 547 fiction and nonfiction titles.
 4. `validateBookLibrary()`, a reusable development validator.
 
-The current collection includes at least 40 fiction books, 30 nonfiction books, the required reader-category balance, at least five books for every mood, and the required mix of Quick, Standard, Long, and Epic reads.
+The current collection contains 274 fiction and 273 nonfiction books. It preserves the complete 92-book base library, restores every protected title from the earlier version, and exceeds the 350-book requirement.
 
 ### Why `primaryGenre` exists
 
@@ -62,10 +62,10 @@ Primary genres are used to:
 
 For every configured genre, the library guarantees:
 
-- At least two books list the genre among their first two genres.
-- At least one book uses the genre as its `primaryGenre`.
-- Browse Genres returns at least two books.
-- Quiz recommendations have a meaningful primary match available.
+- Its individual updated minimum is met; required totals range from 12 to 22 books.
+- At least five books use the genre as their `primaryGenre`.
+- Browse Genres always returns a substantial, primary-first result set.
+- Quiz recommendations have several meaningful primary matches available.
 
 Genres must be genuinely central to each tagged book. Unrelated tags must not be added merely to satisfy a count.
 
@@ -126,7 +126,7 @@ validateBookLibrary()
 A valid library logs:
 
 ```text
-NextRead library validation passed.
+All previous books were preserved and the expanded NextRead library passed validation.
 ```
 
 The returned object includes `valid`, `warnings`, and generated `stats`. To check a specific genre after adding or changing a book:
@@ -138,10 +138,25 @@ validateBookLibrary().stats.genreCoverage["Poetry"]
 The result reports:
 
 - `total`: every book carrying the genre
-- `topTwo`: books listing it in the first two genre positions
+- `required`: the configured minimum for that genre
+- `total`: every unique book carrying the genre
 - `primary`: books using it as `primaryGenre`
+- `uniqueAuthors`: distinct authors represented
+- `pass`: whether the total and five-primary requirements are both met
 
-A genre remains valid when `topTwo` is at least 2 and `primary` is at least 1.
+Validation also prints a `console.table()` report for all genres, plus original, added, final, fiction, nonfiction, audience, mood, and length totals.
+
+## Protected-book preservation
+
+Before the large additive expansion, the 92 existing IDs were captured in `originalBookIds`. Nine required titles found in the earlier project version were restored using their original IDs. `previouslyRequiredBookIds` combines both protected sets.
+
+Run the preservation check independently with:
+
+```js
+validateOriginalBooksWerePreserved()
+```
+
+The expanded validator fails if any protected ID disappears. New titles are deduplicated by ID and title-author combination, so cross-genre books remain single records with up to four accurate genres.
 
 ## localStorage
 
