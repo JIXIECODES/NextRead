@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="NextRead recommends books based on your interests, mood, audience, and preferred length.">
+  <title>NextRead — Find your next great book</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <header class="site-header">
+    <nav class="nav container" aria-label="Primary navigation">
+      <a class="brand" href="#home" aria-label="NextRead home">
+        <span class="brand-mark" aria-hidden="true">N</span>
+        <span>NextRead</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">
+        <span class="sr-only">Toggle navigation</span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+      <div class="nav-links" id="nav-links">
+        <a href="#home">Home</a>
+        <a href="#quiz">Find a Book</a>
+        <a href="#genres">Browse Genres</a>
+        <a href="#reading-list">My Reading List</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <section class="hero" id="home">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">A better way to choose your next book</p>
+          <h1>Find a book that <em>matches you</em></h1>
+          <p class="hero-text">Not sure what to read next? Tell us what you enjoy, and NextRead will recommend books based on your interests, mood, reading level, and preferred book length.</p>
+          <div class="button-row">
+            <a class="button button-primary" href="#quiz">Find My Next Book <span aria-hidden="true">→</span></a>
+            <button class="button button-secondary js-surprise" type="button">Surprise Me</button>
+          </div>
+          <p class="supporting-text"><span aria-hidden="true">✦</span> No endless searching. Just books selected for you.</p>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="hero-sun"></div>
+          <div class="hero-book hero-book-back"><span>A new world<br>awaits</span></div>
+          <div class="hero-book hero-book-front">
+            <span class="hero-book-label">NEXTREAD</span>
+            <strong>Your story<br>starts here</strong>
+            <span class="hero-book-flourish">✦</span>
+          </div>
+          <div class="hero-leaf hero-leaf-one"></div>
+          <div class="hero-leaf hero-leaf-two"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section how-it-works" aria-labelledby="how-heading">
+      <div class="container">
+        <div class="section-heading centered">
+          <p class="eyebrow">Simple by design</p>
+          <h2 id="how-heading">From “what now?” to your next read</h2>
+        </div>
+        <div class="steps-grid">
+          <article class="step-card">
+            <span class="step-number">01</span>
+            <div class="step-icon" aria-hidden="true">◎</div>
+            <h3>Choose Your Preferences</h3>
+            <p>Select your audience, favourite genres, mood, and preferred book length.</p>
+          </article>
+          <article class="step-card">
+            <span class="step-number">02</span>
+            <div class="step-icon" aria-hidden="true">⌕</div>
+            <h3>Get Recommendations</h3>
+            <p>NextRead compares your preferences with books in our collection.</p>
+          </article>
+          <article class="step-card">
+            <span class="step-number">03</span>
+            <div class="step-icon" aria-hidden="true">✦</div>
+            <h3>Discover Your Next Book</h3>
+            <p>Learn about each recommendation and why it matches you.</p>
+          </article>
+          <article class="step-card">
+            <span class="step-number">04</span>
+            <div class="step-icon" aria-hidden="true">♡</div>
+            <h3>Save It for Later</h3>
+            <p>Add interesting books to your personal reading list.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section quiz-section" id="quiz" aria-labelledby="quiz-heading">
+      <div class="container narrow">
+        <div class="section-heading centered">
+          <p class="eyebrow">Your reading compass</p>
+          <h2 id="quiz-heading">What should you read next?</h2>
+          <p>Answer a few questions and we will search our bookshelves for your best matches.</p>
+        </div>
+
+        <form class="quiz-card" id="recommendation-form" novalidate>
+          <fieldset class="quiz-question" data-question="audience">
+            <legend><span class="question-number">1</span> Who is the book for?</legend>
+            <div class="option-grid compact" id="audience-options"></div>
+            <p class="field-error" id="audience-error"></p>
+          </fieldset>
+
+          <fieldset class="quiz-question" data-question="type">
+            <legend><span class="question-number">2</span> What type of book would you like?</legend>
+            <div class="option-grid compact" id="type-options"></div>
+            <p class="field-error" id="type-error"></p>
+          </fieldset>
+
+          <fieldset class="quiz-question" data-question="genre">
+            <legend><span class="question-number">3</span> Which genres interest you?</legend>
+            <div class="question-instructions">
+              <span>Select up to three genres.</span>
+              <strong id="genre-counter">0 of 3 genres selected</strong>
+            </div>
+            <div id="genre-options"></div>
+            <p class="field-error" id="genre-error" aria-live="polite"></p>
+          </fieldset>
+
+          <fieldset class="quiz-question" data-question="mood">
+            <legend><span class="question-number">4</span> What mood are you looking for?</legend>
+            <p class="question-instructions">Choose up to two moods.</p>
+            <div class="chip-grid" id="mood-options"></div>
+            <p class="field-error" id="mood-error" aria-live="polite"></p>
+          </fieldset>
+
+          <fieldset class="quiz-question" data-question="length">
+            <legend><span class="question-number">5</span> How long should the book be?</legend>
+            <div class="option-grid length-grid" id="length-options"></div>
+            <p class="edition-note">The exact number of pages may vary between editions.</p>
+          </fieldset>
+
+          <div class="quiz-actions">
+            <button class="button button-primary" type="submit">Find My Book <span aria-hidden="true">→</span></button>
+            <button class="button button-quiet" id="clear-quiz" type="button">Clear My Choices</button>
+            <button class="button button-secondary js-surprise" type="button">Surprise Me</button>
+          </div>
+          <p class="form-status" id="quiz-status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="section results-section" id="results" aria-labelledby="results-heading" hidden>
+      <div class="container">
+        <div class="section-heading centered">
+          <p class="eyebrow" id="results-kicker">Chosen for you</p>
+          <h2 id="results-heading">We found your next read!</h2>
+          <p id="results-intro">These books match the interests and preferences you selected.</p>
+          <p class="closest-message" id="closest-message" hidden>We could not find an exact match, but these books are the closest to your preferences.</p>
+        </div>
+        <div class="book-grid" id="results-grid"></div>
+        <div class="results-actions">
+          <a class="button button-primary" href="#quiz">Find Another Book</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section genres-section" id="genres" aria-labelledby="genres-heading">
+      <div class="container">
+        <div class="section-heading split-heading">
+          <div>
+            <p class="eyebrow">Explore the shelves</p>
+            <h2 id="genres-heading">Browse books by genre</h2>
+          </div>
+          <p>Explore different types of books and discover a category that matches your interests.</p>
+        </div>
+        <div class="search-wrap">
+          <label for="book-search">Search the collection</label>
+          <div class="search-field">
+            <span aria-hidden="true">⌕</span>
+            <input id="book-search" type="search" placeholder="Search by title, author, or genre…">
+          </div>
+        </div>
+        <div id="browse-genre-options"></div>
+      </div>
+    </section>
+
+    <section class="section reading-list-section" id="reading-list" aria-labelledby="reading-list-heading">
+      <div class="container">
+        <div class="section-heading centered">
+          <p class="eyebrow">Your personal shelf</p>
+          <h2 id="reading-list-heading">My Reading List</h2>
+          <p>Save books you are interested in and keep track of your reading.</p>
+        </div>
+        <p class="list-status" id="reading-list-status" aria-live="polite"></p>
+        <div class="reading-columns">
+          <section class="reading-column" aria-labelledby="want-heading">
+            <h3 id="want-heading">Want to Read <span id="want-count">0</span></h3>
+            <div class="reading-items" id="want-list"></div>
+          </section>
+          <section class="reading-column" aria-labelledby="current-heading">
+            <h3 id="current-heading">Currently Reading <span id="current-count">0</span></h3>
+            <div class="reading-items" id="current-list"></div>
+          </section>
+          <section class="reading-column" aria-labelledby="finished-heading">
+            <h3 id="finished-heading">Finished <span id="finished-count">0</span></h3>
+            <div class="reading-items" id="finished-list"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="section about-section" id="about" aria-labelledby="about-heading">
+      <div class="container about-grid">
+        <div>
+          <p class="eyebrow">The idea behind NextRead</p>
+          <h2 id="about-heading">About NextRead</h2>
+        </div>
+        <div class="about-copy">
+          <p>Choosing a book can be difficult when there are thousands of options. NextRead makes the process easier by recommending books based on the reader’s personal preferences.</p>
+          <p>Readers can select genres, moods, book lengths, age groups, and book types. NextRead then searches its collection and presents books that match those choices.</p>
+          <div class="about-callout">
+            <h3>How Recommendations Work</h3>
+            <p>NextRead compares your answers with information assigned to each book. Books that match more of your selections appear higher in your recommendation results.</p>
+          </div>
+          <p class="notice"><strong>Please note:</strong> Recommendations are suggestions based on the information available in our book collection. Readers should review the description before choosing a book.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq-section" id="faq" aria-labelledby="faq-heading">
+      <div class="container narrow">
+        <div class="section-heading centered">
+          <p class="eyebrow">Good to know</p>
+          <h2 id="faq-heading">Frequently asked questions</h2>
+        </div>
+        <div class="faq-list" id="faq-list">
+          <article class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-answer-1" id="faq-button-1">How does NextRead recommend books?<span aria-hidden="true">+</span></button></h3>
+            <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-button-1" hidden><p>NextRead compares your selected preferences with the genres, audience, mood, length, and type assigned to each book.</p></div>
+          </article>
+          <article class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-answer-2" id="faq-button-2">Do I need an account?<span aria-hidden="true">+</span></button></h3>
+            <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-button-2" hidden><p>No. This version of NextRead does not require an account. Your reading list is saved in your browser.</p></div>
+          </article>
+          <article class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-answer-3" id="faq-button-3">Can I select more than one genre?<span aria-hidden="true">+</span></button></h3>
+            <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-button-3" hidden><p>Yes. You can select up to three genres.</p></div>
+          </article>
+          <article class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-answer-4" id="faq-button-4">What does Surprise Me do?<span aria-hidden="true">+</span></button></h3>
+            <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-button-4" hidden><p>The Surprise Me button chooses a random book from the collection.</p></div>
+          </article>
+          <article class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-answer-5" id="faq-button-5">Why did I not receive an exact match?<span aria-hidden="true">+</span></button></h3>
+            <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-button-5" hidden><p>Your combination of preferences may be very specific. NextRead will show the closest available matches.</p></div>
+          </article>
+          <article class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-answer-6" id="faq-button-6">Are page numbers exact?<span aria-hidden="true">+</span></button></h3>
+            <div class="faq-answer" id="faq-answer-6" role="region" aria-labelledby="faq-button-6" hidden><p>No. Page numbers can vary between editions, so NextRead uses general length categories.</p></div>
+          </article>
+          <article class="faq-item">
+            <h3><button type="button" aria-expanded="false" aria-controls="faq-answer-7" id="faq-button-7">Can I save books for later?<span aria-hidden="true">+</span></button></h3>
+            <div class="faq-answer" id="faq-answer-7" role="region" aria-labelledby="faq-button-7" hidden><p>Yes. You can save books as Want to Read, Currently Reading, or Finished.</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand brand-light" href="#home"><span class="brand-mark" aria-hidden="true">N</span><span>NextRead</span></a>
+        <p>Your next great book is only a few clicks away.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="#home">Home</a>
+        <a href="#quiz">Find a Book</a>
+        <a href="#genres">Browse Genres</a>
+        <a href="#reading-list">My Reading List</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+    <div class="container footer-bottom">
+      <p>© 2026 NextRead. All rights reserved.</p>
+      <p>Book titles and author names belong to their respective copyright holders. NextRead is a book-discovery demonstration project.</p>
+    </div>
+  </footer>
+
+  <script src="books.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
